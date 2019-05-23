@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NewsPortal.Persistence;
+using NewsPortal.WebSite.Models;
 
-namespace NewsPortal
+namespace NewsPortal.WebSite
 {
     public class Startup
     {
@@ -24,15 +21,23 @@ namespace NewsPortal
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<CookiePolicyOptions>(options =>
+            DbType dbType = Configuration.GetSection("CustomSettings").GetValue<DbType>("DbType");
+
+            // Adatbázis kontextus függőségi befecskendezése
+            switch (dbType)
             {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
+                case DbType.SqlServer:
+                    services.AddDbContext<NewsPortalContext>(options =>
+                        options.UseSqlServer(Configuration.GetConnectionString("SqlServerConnection")));
+                    break;
+                case DbType.Sqlite:
+                    services.AddDbContext<NewsPortalContext>(options =>
+                        options.UseSqlite(Configuration.GetConnectionString("SqliteConnection")));
+                    break;
+            }
 
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddTransient<INewsPortalService, NewsPortalService>();
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,16 +46,9 @@ namespace NewsPortal
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                //app.UseBrowserLink();
             }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
-            }
-
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseCookiePolicy();
 
             app.UseMvc(routes =>
             {
@@ -58,6 +56,9 @@ namespace NewsPortal
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            // Adatbázis inicializálása
+            DbInitializer.Initialize(app.ApplicationServices.GetRequiredService<NewsPortalContext>(), Configuration.GetValue<string>("ImageStore"));
         }
     }
 }

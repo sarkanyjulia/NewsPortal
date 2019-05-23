@@ -1,0 +1,37 @@
+﻿@model NewsPortal.Persistence.Article
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+@if (Model == null)
+{
+    <div class="contentText"><p>A keresett cikk nem elérhető.</p></div>
+}
+else
+{
+    <div class="article-detailed">
+        <div class=" article-header">
+            <h1 class="article-title">@Model.Title</h1>
+            <p>
+                Szerző: @Model.Author.Name<br/>
+                Utoljára módosítva: @Model.LastModified
+            </p>
+        </div>
+        <div class="article-content">
+            @if (Model.Pictures.Count() > 0)
+            {
+                <div class="wrapper">
+                    <a asp-action="Gallery" asp-route-articleId="@Model.Id">                      
+                        <img align="left" style="margin:0px 20px 0px 0px" src="@Url.Action("MainPictureForArticle", new { articleId = Model.Id })" class="contentImage" />                           
+                        <span class="glyphicon glyphicon-camera"></span>
+                    </a>
+                </div>                
+            }
+            <div>@Model.Content</div>
+        </div>
+
+ 
+
+    </div>
+}

@@ -3,7 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsPortal", "NewsPortal\NewsPortal.csproj", "{38C6179F-299B-497C-93AB-AB08E9ECFC9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsPortal.WebSite", "NewsPortal\NewsPortal.WebSite.csproj", "{38C6179F-299B-497C-93AB-AB08E9ECFC9E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsPortal.Persistence", "NewsPortal.Persistence\NewsPortal.Persistence.csproj", "{31312102-3686-4571-802B-5F8ACEBC1F58}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsPortal.WebSite.Test", "NewsPortal.WebSite.Test\NewsPortal.WebSite.Test.csproj", "{9D6F0162-9DBC-4DC7-8893-1E8D2809FEF2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsPortal.WebAPI", "NewsPortal.WebAPI\NewsPortal.WebAPI.csproj", "{0A28F5E2-C57A-449C-9ADE-4A14A7806800}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsPortal.Admin", "NewsPortal.Admin\NewsPortal.Admin.csproj", "{A929F55D-D5A4-4181-9E1C-E3C1B9A92896}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsPortal.Data", "NewsPortal.Data\NewsPortal.Data.csproj", "{CB05CAC7-BF1C-4E1E-B324-8395EBECE0AC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +25,26 @@ Global
 		{38C6179F-299B-497C-93AB-AB08E9ECFC9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38C6179F-299B-497C-93AB-AB08E9ECFC9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38C6179F-299B-497C-93AB-AB08E9ECFC9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31312102-3686-4571-802B-5F8ACEBC1F58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31312102-3686-4571-802B-5F8ACEBC1F58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31312102-3686-4571-802B-5F8ACEBC1F58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31312102-3686-4571-802B-5F8ACEBC1F58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D6F0162-9DBC-4DC7-8893-1E8D2809FEF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D6F0162-9DBC-4DC7-8893-1E8D2809FEF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D6F0162-9DBC-4DC7-8893-1E8D2809FEF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D6F0162-9DBC-4DC7-8893-1E8D2809FEF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A28F5E2-C57A-449C-9ADE-4A14A7806800}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A28F5E2-C57A-449C-9ADE-4A14A7806800}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A28F5E2-C57A-449C-9ADE-4A14A7806800}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A28F5E2-C57A-449C-9ADE-4A14A7806800}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A929F55D-D5A4-4181-9E1C-E3C1B9A92896}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A929F55D-D5A4-4181-9E1C-E3C1B9A92896}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A929F55D-D5A4-4181-9E1C-E3C1B9A92896}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A929F55D-D5A4-4181-9E1C-E3C1B9A92896}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB05CAC7-BF1C-4E1E-B324-8395EBECE0AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB05CAC7-BF1C-4E1E-B324-8395EBECE0AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB05CAC7-BF1C-4E1E-B324-8395EBECE0AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB05CAC7-BF1C-4E1E-B324-8395EBECE0AC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

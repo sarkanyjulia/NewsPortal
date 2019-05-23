@@ -1,0 +1,88 @@
+﻿@model NewsPortal.WebSite.Models.SearchPageViewModel
+
+@{
+    ViewData["Title"] = "Keresés";
+}
+
+<h1>Keresés az archívumban</h1>
+
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Result" method="get">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="DateFrom" class="control-label"></label>
+                <input asp-for="DateFrom" class="form-control" />
+                <span asp-validation-for="DateFrom" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateTo" class="control-label"></label>
+                <input asp-for="DateTo" class="form-control" />
+                <span asp-validation-for="DateTo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Content" class="control-label"></label>
+                <input asp-for="Content" class="form-control" />
+                <span asp-validation-for="Content" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Keres" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Vissza az archívumhoz</a>
+</div>
+
+<div id="result">
+    @if (Model.Result != null)
+    {
+        <h2>Találatok:</h2>
+        @if (Model.Result.Count == 0)
+        {
+            <div class="contentText"><p>Nincs a keresési feltételeknek megfelelő cikk.</p></div>
+        }
+        else
+        {
+            <div class="article-list">
+                @foreach (var article in Model.Result)
+                {
+                    <div class="article">
+                        <h1 class="article-title"><a asp-controller="Home" asp-action="Article" asp-route-articleId="@article.Id">@article.Title</a></h1>
+                        <div class="article-summary">@article.Summary</div>
+                    </div>
+                }
+            </div>
+
+            var prevDisabled = !Model.Result.HasPreviousPage ? "disabled" : "";
+            var nextDisabled = !Model.Result.HasNextPage ? "disabled" : "";
+
+            <div style="padding-top:20px">
+                <a asp-action="Result"
+                   asp-route-pageNumber="@(Model.Result.PageIndex - 1)"
+                   class="btn btn-default @prevDisabled">
+                    Előző
+                </a>
+                <a asp-action="Result"
+                   asp-route-pageNumber="@(Model.Result.PageIndex + 1)"
+                   class="btn btn-default @nextDisabled">
+                    Következő
+                </a>
+            </div>
+                }
+
+
+
+                }
+            </div>
+
+

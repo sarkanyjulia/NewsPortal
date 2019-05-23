@@ -35,3 +35,39 @@ body {
         display: none;
     }
 }
+
+
+.article-list h1 {
+    font-size: 150%;
+}
+.lead {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.wrapper {
+    position: relative;
+}
+
+.wrapper .glyphicon {
+    color: white;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+
+}  
+
+.article-header p {
+    font-size: 90%;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-family: 'Verdana';
+    
+}
+
+.lead h1 {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}

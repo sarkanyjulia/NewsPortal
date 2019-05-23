@@ -1,0 +1,46 @@
+﻿@using NewsPortal.WebSite.Models
+@using NewsPortal.Persistence
+
+@{
+    ViewData["Title"] = "Archívum";
+}
+
+@model NewsPortal.WebSite.Models.PaginatedList<Article>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="contentText">Nincs megjeleníthető hír.</div>
+}
+else
+{
+
+    <div class="article-list">
+        @foreach (var article in Model)
+        {
+            <div class="article">
+                <h1 class="article-title"><a asp-controller="Home" asp-action="Article" asp-route-articleId="@article.Id">@article.Title</a></h1>
+                <div class="article-summary">@article.Summary</div>
+            </div>
+        }
+    </div>
+
+
+}
+
+@{
+    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+}
+
+<div style="padding-top:20px">
+<a asp-action="Index"
+   asp-route-pageNumber="@(Model.PageIndex - 1)"
+   class="btn btn-default @prevDisabled">
+    Előző
+</a>
+<a asp-action="Index"
+   asp-route-pageNumber="@(Model.PageIndex + 1)"
+   class="btn btn-default @nextDisabled">
+    Következő
+</a>
+</div>

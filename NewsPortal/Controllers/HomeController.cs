@@ -4,40 +4,70 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using NewsPortal.Models;
+using NewsPortal.WebSite.Models;
+using NewsPortal.Persistence;
+using Microsoft.EntityFrameworkCore;
 
-namespace NewsPortal.Controllers
+namespace NewsPortal.WebSite.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : Controller       
     {
+        private INewsPortalService _service;
+
+        public HomeController(INewsPortalService service)
+        {
+            _service = service;
+        }
         public IActionResult Index()
         {
-            return View();
+            HomePageViewModel viewModel = new HomePageViewModel();
+            viewModel.LeadingArticle = _service.GetLeadingArticle();
+            viewModel.Articles = _service.GetFreshArticles().ToList();
+            return View("Index", viewModel);
         }
 
-        public IActionResult About()
+        public IActionResult Article(int? articleId)
         {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
+            Article article = _service.GetArticle(articleId);
+            return View("Article", article);
         }
 
-        public IActionResult Contact()
+        public FileResult MainPictureForArticle(Int32? articleId)
+        {          
+            Byte[] imageContent = _service.GetMainImage(articleId);
+
+            if (imageContent == null) 
+                return null;
+
+            return File(imageContent, "image/png");
+        }
+
+        public IActionResult Gallery(int articleId)
         {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
+            GalleryViewModel viewModel = new GalleryViewModel();
+            viewModel.ArticleId = articleId;
+            viewModel.PictureIds = _service.GetPictureIds(articleId).ToList();
+            return View("Gallery", viewModel);
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
+        public FileResult LargePicture(Int32? pictureId)
+        {           
+            Byte[] imageContent = _service.GetLargePictureById(pictureId);
+
+            if (imageContent == null)
+                return null;
+
+            return File(imageContent, "image/png");
         }
+
+        
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        
     }
 }

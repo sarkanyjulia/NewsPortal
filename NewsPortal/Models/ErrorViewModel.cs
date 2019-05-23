@@ -1,6 +1,6 @@
 using System;
 
-namespace NewsPortal.Models
+namespace NewsPortal.WebSite.Models
 {
     public class ErrorViewModel
     {
