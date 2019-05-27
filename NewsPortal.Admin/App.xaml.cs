@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Win32;
 using NewsPortal.Admin.Model;
 using NewsPortal.Admin.Persistence;
 using NewsPortal.Admin.View;
@@ -23,6 +24,7 @@ namespace NewsPortal.Admin
         private MainViewModel _mainViewModel;
         private MainWindow _mainView;
         private EditorWindow _editorView;
+        
 
         public App()
         {
@@ -32,7 +34,8 @@ namespace NewsPortal.Admin
 
         private void App_Startup(object sender, StartupEventArgs e)
         {
-            _model = new NewsPortalModel(new NewsPortalServicePersistence("http://localhost:44348/")); // megadjuk a szolgáltatás címét
+            _model = new NewsPortalModel(new NewsPortalServicePersistence("https://localhost:44348/")); // megadjuk a szolgáltatás címét
+            
             /*
             _loginViewModel = new LoginViewModel(_model);
             _loginViewModel.ExitApplication += new EventHandler(ViewModel_ExitApplication);
@@ -44,6 +47,14 @@ namespace NewsPortal.Admin
             _loginView.Show();
             */
             _mainViewModel = new MainViewModel(_model);
+            _mainViewModel.ArticleEditingStarted += new EventHandler(MainViewModel_ArticleEditingStarted);
+            _mainViewModel.ArticleEditingFinished += new EventHandler(MainViewModel_ArticleEditingFinished);
+            _mainViewModel.ImageEditingStarted += new EventHandler<ArticleEventArgs>(MainViewModel_ImageEditingStarted);
+            _mainViewModel.ExitApplication += new EventHandler(ViewModel_ExitApplication);
+            _model.ArticleCreated += new EventHandler<ArticleListEventArgs>(_mainViewModel.ViewModel_ArticleCreated);
+            _model.ArticleChanged += new EventHandler<ArticleListEventArgs>(_mainViewModel.ViewModel_ArticleChanged);
+            _model.PictureCreated += new EventHandler<PictureEventArgs>(_mainViewModel.ViewModel_PictureCreated);
+
             _mainView = new MainWindow();
             _mainView.DataContext = _mainViewModel;
             _mainView.Show();
@@ -52,11 +63,11 @@ namespace NewsPortal.Admin
         private void ViewModel_LoginSuccess(object sender, EventArgs e)
         {
             _mainViewModel = new MainViewModel(_model);
-            /*
-            _mainViewModel.MessageApplication += new EventHandler<MessageEventArgs>(ViewModel_MessageApplication);
-            _mainViewModel.BuildingEditingStarted += new EventHandler(MainViewModel_BuildingEditingStarted);
-            _mainViewModel.BuildingEditingFinished += new EventHandler(MainViewModel_BuildingEditingFinished);
-            _mainViewModel.ImageEditingStarted += new EventHandler<BuildingEventArgs>(MainViewModel_ImageEditingStarted);*/
+            
+            //_mainViewModel.MessageApplication += new EventHandler<MessageEventArgs>(ViewModel_MessageApplication);
+            _mainViewModel.ArticleEditingStarted += new EventHandler(MainViewModel_ArticleEditingStarted);
+            _mainViewModel.ArticleEditingFinished += new EventHandler(MainViewModel_ArticleEditingFinished);
+            //_mainViewModel.ImageEditingStarted += new EventHandler<BuildingEventArgs>(MainViewModel_ImageEditingStarted);*/
             _mainViewModel.ExitApplication += new EventHandler(ViewModel_ExitApplication);
 
             _mainView = new MainWindow();
@@ -64,6 +75,11 @@ namespace NewsPortal.Admin
             _mainView.Show();
 
             _loginView.Close();
+        }
+
+        private void ViewModel_LoginFailed(object sender, EventArgs e)
+        {
+            MessageBox.Show("A bejelentkezés sikertelen!", "Napi Hírek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
 
         public async void App_Exit(object sender, ExitEventArgs e)
@@ -78,6 +94,48 @@ namespace NewsPortal.Admin
         {
             Shutdown();
         }
+
+        private void MainViewModel_ArticleEditingStarted(object sender, EventArgs e)
+        {
+            _editorView = new EditorWindow(); // külön szerkesztő dialógus az épületekre
+            _editorView.DataContext = _mainViewModel;
+            _editorView.Closed += new EventHandler(MainViewModel_ArticleWindowClosed);
+            _editorView.Show();
+        }
+
+        private void MainViewModel_ArticleWindowClosed(object sender, EventArgs e)
+        {
+            _mainViewModel.ResetArticleUnderEdit();
+        }
+
+        private void MainViewModel_ArticleEditingFinished(object sender, EventArgs e)
+        {
+            _editorView.Close();
+        }
+
+        private void MainViewModel_ImageEditingStarted(object sender, ArticleEventArgs e)
+        {
+            try
+            {
+                // egy dialógusablakban bekérjük a fájlnevet
+                OpenFileDialog dialog = new OpenFileDialog();
+                dialog.CheckFileExists = true;
+                dialog.Filter = "Képfájlok|*.jpg;*.jpeg;*.bmp;*.tif;*.gif;*.png;";
+                dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+                Boolean? result = dialog.ShowDialog();
+
+                if (result == true)
+                {
+                    // kép létrehozása (a megfelelő méretekkel)
+                    _model.CreatePicture(e.ArticleId,
+                                       ImageHandler.OpenAndResize(dialog.FileName, 60),
+                                       ImageHandler.OpenAndResize(dialog.FileName, 600));
+                }
+            }
+            catch { }
+        }
+
+
     }
 
  

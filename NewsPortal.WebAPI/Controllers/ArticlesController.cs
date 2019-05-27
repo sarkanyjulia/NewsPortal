@@ -56,6 +56,8 @@ namespace NewsPortal.WebAPI.Controllers
             }
 
             var article = _context.Articles.Find(id);
+            var pictures = _context.Pictures.Where(p => p.ArticleId == id)
+                .Select(image => new PictureDTO { Id = image.Id, ArticleId = image.ArticleId, ImageSmall = image.ImageSmall, ImageLarge = null });
 
             if (article == null)
             {
@@ -69,7 +71,8 @@ namespace NewsPortal.WebAPI.Controllers
                 Summary = article.Summary,
                 Content = article.Content,
                 Lead = article.Lead,
-                UserId = article.UserId
+                UserId = article.UserId,
+                Pictures = pictures.ToList()             
             };
             return Ok(articleDTO);
         }
@@ -129,11 +132,20 @@ namespace NewsPortal.WebAPI.Controllers
                     Lead = articleDTO.Lead,
                     UserId = articleDTO.UserId
                 });
-
                 _context.SaveChanges(); 
-
                 articleDTO.Id = addedArticle.Entity.Id;
-                
+
+                foreach (PictureDTO pictureDTO in articleDTO.Pictures)
+                {
+                    _context.Pictures.Add(new Picture
+                    {
+                        ArticleId = articleDTO.Id,
+                        ImageSmall = pictureDTO.ImageSmall,
+                        ImageLarge = pictureDTO.ImageLarge
+                    });
+                }
+                _context.SaveChanges();
+
                 return CreatedAtAction("GetArticle", new { id = addedArticle.Entity.Id }, articleDTO);
 
             }

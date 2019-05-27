@@ -3,21 +3,61 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModel="clr-namespace:NewsPortal.Admin.ViewModel"
         xmlns:local="clr-namespace:NewsPortal.Admin.View"
         mc:Ignorable="d"
-        Title="Cikk szerkesztése" Height="450" Width="800">
+        Title="Napi Hírek - Cikk szerkesztése" Height="450" Width="800">
+    <Window.Resources>
+        <viewModel:ImageConverter x:Key="imageConverter"/>
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="90" />
+            <ColumnDefinition Width="231*" />
+            <ColumnDefinition Width="115*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="80" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="90" />
+            <RowDefinition Height="50" />
         </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="0"  Margin="10">Cím:</TextBlock>
+        <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ArticleUnderEdit.Title}" Margin="10,5,10,5" TextWrapping="Wrap"/>
+        <TextBlock Grid.Row="1" Grid.Column="0"  Margin="10">Összefoglaló:</TextBlock>
+        <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ArticleUnderEdit.Summary}" Margin="10,5,10,5" TextWrapping="Wrap"/>
+        <TextBlock Grid.Row="2" Grid.Column="0"  Margin="10">Cikk szövege:</TextBlock>
+        <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ArticleUnderEdit.Content}" Margin="10,5,10,5" TextWrapping="Wrap"/>
+        <TextBlock Grid.Row="3" Grid.Column="0"  Margin="10">Képek:</TextBlock>
+
+        <ListBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Name="imageListBox" ItemsSource="{Binding ArticleUnderEdit.Pictures}" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="10" SelectionMode="Single" SelectedItem="{Binding SelectedPicture}" xmlns:sys="clr-namespace:System;assembly=mscorlib" >
+            <!-- az épülethez tartozó képeket egy listba helyezzük, amely vízszintesen görgethető -->
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel IsItemsHost="True" />
+                    <!-- megadjuk, hogy az elemeket víszintesen helyezze el -->
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Image Height="60" Width="Auto" Source="{Binding ImageSmall, Converter={StaticResource imageConverter}}" />
+                    <!-- képmegjelenítőt használunk konverzióval -->
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" >
+            <CheckBox Content="Vezető cikk" IsChecked="{Binding ArticleUnderEdit.Lead, Mode=TwoWay}" Margin="20, 15, 5, 20" />
+            <Button Command="{Binding DeletePictureCommand}" Width="120" Height ="30" Margin="20, 5, 10, 10">Kijelölt képek törlése</Button>
+            <Button Command="{Binding NewPictureCommand}" Width="100" Height ="30" Margin="10, 5, 20, 10">Új kép feltöltése</Button>
+        </StackPanel>
+        
+        <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" >
+            <Button Command="{Binding SaveArticleCommand}" Width="80" Height ="30" Margin="20, 5, 10, 10">Mentés</Button>
+            <Button Command="{Binding CloseEditorCommand}" Width="80" Height ="30" Margin="10, 5, 20, 10">Bezár</Button>
+        </StackPanel>
+
     </Grid>
 </Window>

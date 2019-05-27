@@ -49,11 +49,11 @@ namespace NewsPortal.Admin.Persistence
             }
         }
 
-        public async Task<bool> DeleteArticleAsync(ArticleDTO article)
+        public async Task<bool> DeleteArticleAsync(int articleId)
         {
             try
             {
-                HttpResponseMessage response = await _client.DeleteAsync("api/articles/" + article.Id);
+                HttpResponseMessage response = await _client.DeleteAsync("api/articles/" + articleId);
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
@@ -62,11 +62,11 @@ namespace NewsPortal.Admin.Persistence
             }
         }
 
-        public async Task<bool> DeletePictureAsync(PictureDTO image)
+        public async Task<bool> DeletePictureAsync(int pictureId)
         {
             try
             {
-                HttpResponseMessage response = await _client.DeleteAsync("api/pictures/" + image.Id);
+                HttpResponseMessage response = await _client.DeleteAsync("api/pictures/" + pictureId);
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
@@ -94,6 +94,27 @@ namespace NewsPortal.Admin.Persistence
             {
                 HttpResponseMessage response = await _client.GetAsync("api/account/logout");
                 return !response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                throw new PersistenceUnavailableException(ex);
+            }
+        }
+
+        public async Task<ArticleDTO> ReadArticleAsync(int articleId)
+        {
+            try
+            {
+                HttpResponseMessage response = await _client.GetAsync("api/articles/" + articleId);
+                if (response.IsSuccessStatusCode)
+                {
+                    ArticleDTO article = await response.Content.ReadAsAsync<ArticleDTO>();
+                    return article;
+                }
+                else
+                {
+                    throw new PersistenceUnavailableException("Service returned response: " + response.StatusCode);
+                }
             }
             catch (Exception ex)
             {
@@ -131,17 +152,19 @@ namespace NewsPortal.Admin.Persistence
                 }
             }
             catch (Exception ex)
-            {
+            {              
                 throw new PersistenceUnavailableException(ex);
             }
 
         }
 
+        
+
         public async Task<bool> UpdateArticleAsync(ArticleDTO article)
         {
             try
             {
-                HttpResponseMessage response = await _client.PutAsJsonAsync("api/articles/", article);
+                HttpResponseMessage response = await _client.PutAsJsonAsync("api/articles/"+article.Id, article);
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
@@ -149,5 +172,7 @@ namespace NewsPortal.Admin.Persistence
                 throw new PersistenceUnavailableException(ex);
             }
         }
+
+        
     }
 }

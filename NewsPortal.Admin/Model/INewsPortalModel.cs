@@ -7,27 +7,31 @@ namespace NewsPortal.Admin.Model
 {
     public interface INewsPortalModel
     {
-        IReadOnlyList<ArticleDTO> Articles { get; }
 
         List<ArticleListElement> ArticleList { get; }
 
-        Boolean IsUserLoggedIn { get; }
+        ArticleDTO ArticleToEdit { get; set; }
 
-        event EventHandler<ArticleEventArgs> ArticleChanged;
+        Boolean IsUserLoggedIn { get; }      
 
-        void CreateArticle(ArticleDTO article);
+        event EventHandler<ArticleListEventArgs> ArticleChanged;
+        event EventHandler<ArticleListEventArgs> ArticleCreated;
+        event EventHandler<PictureEventArgs> PictureCreated;
+
+        Task LoadArticleAsync(int articleId);
+
 
         void CreatePicture(Int32 articleId, Byte[] imageSmall, Byte[] imageLarge);
 
-        void UpdateArticle(ArticleDTO article);
+        Task UpdateArticle(ArticleDTO article);
 
-        void DeleteArticle(ArticleDTO article);
+        void DeleteArticle(ArticleListElement article);
 
         void DeletePicture(PictureDTO picture);
 
         Task LoadAsync();
 
-        Task SaveAsync();
+        Task CreateArticleAsync(ArticleDTO articleToSave);
 
         Task<Boolean> LoginAsync(String userName, String userPassword);
 

@@ -16,5 +16,10 @@ namespace NewsPortal.Data
 
         public Byte[] ImageLarge { get; set; }
 
+        public override Boolean Equals(Object obj)
+        {
+            return (obj is PictureDTO dto) && Id == dto.Id;
+        }
+
     }
 }

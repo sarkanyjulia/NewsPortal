@@ -6,10 +6,14 @@
         xmlns:local="clr-namespace:NewsPortal.Admin.View"
         mc:Ignorable="d"
         Title="Napi Hírek - Admin felület" Height="450" Width="800">
+    <Window.Resources>
+        
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="20" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="20" />
         </Grid.RowDefinitions>
         
         <Menu Grid.Row="0" >
@@ -18,22 +22,19 @@
             <MenuItem Header="Kijelentkezés" Command="{Binding ExitCommand}" />
         </Menu>
 
-        <DataGrid Name="articlegGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" ItemsSource="{Binding Articles}" SelectedItem="{Binding SelectedArticle}" xmlns:sys="clr-namespace:System;assembly=mscorlib">
-
+        <DataGrid x:Name="articlegGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" ItemsSource="{Binding Articles}" SelectedItem="{Binding SelectedArticle}" xmlns:sys="clr-namespace:System;assembly=mscorlib" SelectionMode="Single">
+           
             <DataGrid.Resources>
                 <sys:String x:Key="edit">Szerkeszt</sys:String>
                 <sys:String x:Key="delete">Töröl</sys:String>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <!--
-                <DataGridHyperlinkColumn Header="{StaticResource edit}" Binding="{Binding }" ContentBinding="{Binding Source={StaticResource edit}}" />
-                <DataGridHyperlinkColumn Header="{StaticResource delete}" Binding="{Binding }" ContentBinding="{Binding Source={StaticResource delete}}" />-->
-
+   <!--             
                 <DataGridTemplateColumn Header="Szerkesztés">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock>
-                                <Hyperlink Command="{Binding EditCommand}"
+                                <Hyperlink Command="{Binding EditCommand, Source={StaticResource ViewModel}}"
                                            CommandParameter="{Binding Id}">
                                      <TextBlock Text="{StaticResource edit}" />
                                 </Hyperlink>    
@@ -46,7 +47,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock>
-                                <Hyperlink Command="{Binding DeleteCommand}"
+                                <Hyperlink Command="{Binding DeleteCommand, Source={StaticResource ViewModel}}"
                                            CommandParameter="{Binding Id}">
                                      <TextBlock Text="{StaticResource delete}" />
                                 </Hyperlink>    
@@ -54,12 +55,18 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-
-                <DataGridTextColumn Header="Szerző" Binding="{Binding AuthorName}"  />
-                <DataGridTextColumn Header="Dátum" Binding="{Binding LastModified}" />
+-->
                 <DataGridTextColumn Header="Cím" Binding="{Binding Title}" />
+                <DataGridTextColumn Header="Dátum" Binding="{Binding LastModified}" />
+                <DataGridTextColumn Header="Szerző" Binding="{Binding AuthorName}"  />
+                
             </DataGrid.Columns>
         </DataGrid>
 
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <Button Content="Kiválasztott cikk szerkesztése" Command="{Binding EditCommand}" CommandParameter="{Binding SelectedArticle}" />
+            <Button Content="Kiválasztott cikk törlése" Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedArticle}" />
+
+        </StackPanel>
     </Grid>
 </Window>

@@ -63,16 +63,21 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\ArticleEventArgs.cs" />
+    <Compile Include="Model\ArticleListEventArgs.cs" />
     <Compile Include="Model\INewsPortalModel.cs" />
+    <Compile Include="Model\InvalidFormException.cs" />
     <Compile Include="Model\NewsPortalModel.cs" />
+    <Compile Include="Model\PictureEventArgs.cs" />
     <Compile Include="Persistence\INewsPortalPersistence.cs" />
     <Compile Include="Persistence\NewsPortalServicePersistence.cs" />
     <Compile Include="Persistence\PersistenceUnavailableException.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
+    <Compile Include="ViewModel\Converters\ImageConverter.cs" />
     <Compile Include="ViewModel\ImageHandler.cs" />
     <Compile Include="ViewModel\LoginViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\MessageEventArgs.cs" />
+    <Compile Include="ViewModel\ArticleViewModel.cs" />
     <Compile Include="ViewModel\ViewModelBase.cs" />
     <Compile Include="View\EditorWindow.xaml.cs">
       <DependentUpon>EditorWindow.xaml</DependentUpon>
@@ -118,7 +123,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

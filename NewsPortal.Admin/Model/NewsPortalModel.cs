@@ -10,19 +10,12 @@ namespace NewsPortal.Admin.Model
 {
     public class NewsPortalModel : INewsPortalModel
     {
-        private enum DataFlag
-        {
-            Create,
-            Update,
-            Delete
-        }
+        private int _uid = 1;
+        private String _uname = "Anna";
+        private int _generatedId = 0;
 
         private INewsPortalPersistence _persistence;
-        private List<ArticleDTO> _articles;
         private List<ArticleListElement> _articleList;
-        private Dictionary<ArticleDTO, DataFlag> _articleFlags;
-        private Dictionary<PictureDTO, DataFlag> _imageFlags;
-        
 
         public NewsPortalModel(INewsPortalPersistence persistence)
         {
@@ -33,113 +26,51 @@ namespace NewsPortal.Admin.Model
             _persistence = persistence;
         }
 
-        public IReadOnlyList<ArticleDTO> Articles
-        {
-            get { return _articles; }
-        }
+        public ArticleDTO ArticleToEdit { get; set; }
 
         public List<ArticleListElement> ArticleList
         {
             get { return _articleList; }
         }
         public bool IsUserLoggedIn { get; private set; }
+        
 
-        public event EventHandler<ArticleEventArgs> ArticleChanged;
+        public event EventHandler<ArticleListEventArgs> ArticleChanged;
+        public event EventHandler<ArticleListEventArgs> ArticleCreated;
+        public event EventHandler<PictureEventArgs> PictureCreated;
 
-        public void CreateArticle(ArticleDTO article)
-        {
-            if (article == null)
-                throw new ArgumentNullException(nameof(article));
-            if (_articles.Contains(article))
-                throw new ArgumentException("The article is already in the collection.", nameof(article));
-
-            article.Id = (_articles.Count > 0 ? _articles.Max(b => b.Id) : 0) + 1; // generálunk egy új, ideiglenes azonosítót (nem fog átkerülni a szerverre)
-            _articleFlags.Add(article, DataFlag.Create);
-            _articles.Add(article);
-        }
 
         public void CreatePicture(int articleId, byte[] imageSmall, byte[] imageLarge)
-        {
-            ArticleDTO article = _articles.FirstOrDefault(a => a.Id == articleId);
-            if (article == null)
-                throw new ArgumentException("The article does not exist.", nameof(articleId));
-
-            // létrehozzuk a képet
+        {          
             PictureDTO picture = new PictureDTO
             {
-                Id = _articles.Max(a => a.Pictures.Any() ? a.Pictures.Max(im => im.Id) : 0) + 1,
+                Id = getNextId(),
                 ArticleId = articleId,
                 ImageSmall = imageSmall,
                 ImageLarge = imageLarge
             };
-
-            // hozzáadjuk
-            article.Pictures.Add(picture);
-            _imageFlags.Add(picture, DataFlag.Create);
-
-            // jellezzük a változást
-            //OnArticleChanged(article.Id);
+            OnPictureCreated(picture);
         }
 
-        public void DeleteArticle(ArticleDTO article)
+        public void DeleteArticle(ArticleListElement article)
         {
-            if (article == null)
-                throw new ArgumentNullException(nameof(article));
-
-            // keresés azonosító alapján
-            ArticleDTO articleToDelete = _articles.FirstOrDefault(a => a.Id == article.Id);
-
-            if (articleToDelete == null)
-                throw new ArgumentException("The article does not exist.", nameof(article));
-
-            // külön kezeljük, ha egy adat újonnan hozzávett (ekkor nem kell törölni a szerverről)
-            if (_articleFlags.ContainsKey(articleToDelete) && _articleFlags[articleToDelete] == DataFlag.Create)
-                _articleFlags.Remove(articleToDelete);
-            else
-                _articleFlags[articleToDelete] = DataFlag.Delete;
-
-            _articles.Remove(articleToDelete);
+            _persistence.DeleteArticleAsync(article.Id);
+            _articleList.Remove(article);
         }
 
         public void DeletePicture(PictureDTO picture)
         {
-            if (picture == null)
-                throw new ArgumentNullException(nameof(picture));
-
-            // megkeressük a képet
-            foreach (ArticleDTO article in _articles)
-            {
-                if (!article.Pictures.Contains(picture))
-                    continue;
-
-                // kezeljük az állapotjelzéseket is
-                if (_imageFlags.ContainsKey(picture))
-                    _imageFlags.Remove(picture);
-                else
-                    _imageFlags.Add(picture, DataFlag.Delete);
-
-                // töröljük a képet
-                article.Pictures.Remove(picture);
-
-                // jellezzük a változást
-                //OnArticleChanged(article.Id);
-
-                return;
-            }
-
-            // ha idáig eljutott, akkor nem sikerült képet törölni+
-            throw new ArgumentException("The picture does not exist.", nameof(picture));
+           
         }
 
         public async Task LoadAsync()
-        {
-            // adatok
+        {          
             _articleList = (await _persistence.ReadArticlesAsync()).ToList();
+        }
 
-
-            // állapotjelzések
-            //_articleFlags = new Dictionary<ArticleDTO, DataFlag>();
-            //_imageFlags = new Dictionary<PictureDTO, DataFlag>();
+        public async Task LoadArticleAsync(int articleId)
+        {
+            ArticleToEdit = await _persistence.ReadArticleAsync(articleId);
         }
 
         public async Task<bool> LoginAsync(string userName, string userPassword)
@@ -158,92 +89,97 @@ namespace NewsPortal.Admin.Model
             return IsUserLoggedIn;
         }
 
-        public async Task SaveAsync()
+        public async Task CreateArticleAsync(ArticleDTO article)
         {
-            // épületek
-            List<ArticleDTO> articlesToSave = _articleFlags.Keys.ToList();
-
-            foreach (ArticleDTO article in articlesToSave)
+            if (IsFormInvalid(article))
             {
-                Boolean result = true;
-
-                // az állapotjelzőnek megfelelő műveletet végezzük el
-                switch (_articleFlags[article])
-                {
-                    case DataFlag.Create:
-                        result = await _persistence.CreateArticleAsync(article);
-                        break;
-                    case DataFlag.Delete:
-                        result = await _persistence.DeleteArticleAsync(article);
-                        break;
-                    case DataFlag.Update:
-                        result = await _persistence.UpdateArticleAsync(article);
-                        break;
-                }
-
-                if (!result)
-                    throw new InvalidOperationException("Operation " + _articleFlags[article] + " failed on article " + article.Id);
-
-                // ha sikeres volt a mentés, akkor törölhetjük az állapotjelzőt
-                _articleFlags.Remove(article);
+                throw new InvalidFormException();
             }
-
-            // képek
-            List<PictureDTO> imagesToSave = _imageFlags.Keys.ToList();
-
-            foreach (PictureDTO image in imagesToSave)
+            article.UserId = _uid;
+            await _persistence.CreateArticleAsync(article);
+            ArticleListElement newArticleElementList = new ArticleListElement
             {
-                Boolean result = true;
-
-                switch (_imageFlags[image])
-                {
-                    case DataFlag.Create:
-                        result = await _persistence.CreatePictureAsync(image);
-                        break;
-                    case DataFlag.Delete:
-                        result = await _persistence.DeletePictureAsync(image);
-                        break;
-                }
-
-                if (!result)
-                    throw new InvalidOperationException("Operation " + _imageFlags[image] + " failed on image " + image.Id);
-
-                // ha sikeres volt a mentés, akkor törölhetjük az állapotjelzőt
-                _imageFlags.Remove(image);
-            }
+                Id = article.Id,
+                Title = article.Title,
+                LastModified = article.LastModified,
+                AuthorName = _uname
+            };
+            _articleList.Add(newArticleElementList);
+            OnArticleCreated(newArticleElementList);
         }
 
-        public void UpdateArticle(ArticleDTO article)
+        public async Task UpdateArticle(ArticleDTO article)
         {
-            if (article == null)
-                throw new ArgumentNullException(nameof(article));
+            if ( IsFormInvalid(article) )
+            {
+                throw new InvalidFormException();
+            }
 
-            // keresés azonosító alapján
-            ArticleDTO articleToModify = _articles.FirstOrDefault(a => a.Id == article.Id);
+            ArticleDTO articleToSave = new ArticleDTO {
+                Id = article.Id,
+                Title = article.Title,
+                Summary = article.Summary,
+                Content = article.Content,
+                UserId = article.UserId,
+                LastModified = article.LastModified,
+                Lead = article.Lead
+            };
+            await _persistence.UpdateArticleAsync(articleToSave);
 
-            if (articleToModify == null)
-                throw new ArgumentException("The article does not exist.", nameof(article));
+            foreach (PictureDTO picture in article.Pictures)
+            {
+                if ( picture.Id<0 )
+                {
+                    await _persistence.CreatePictureAsync(picture);
+                }
+            }
 
-            // módosítások végrehajtása
+            foreach (PictureDTO picture in ArticleToEdit.Pictures)
+            {
+                if (!article.Pictures.Contains(picture))
+                {
+                    await _persistence.DeletePictureAsync(picture.Id);
+                }
+            }
+
+            ArticleToEdit = null;
+            ArticleListElement articleToModify = _articleList.FirstOrDefault(a => a.Id == article.Id);
             articleToModify.Title = article.Title;
-            articleToModify.LastModified = article.LastModified;
-            articleToModify.Summary = article.Summary;
-            articleToModify.Content = article.Content;
-            articleToModify.Lead = article.Lead;
-            articleToModify.UserId = article.UserId;
+            articleToModify.LastModified = articleToSave.LastModified;
+            OnArticleChanged(articleToModify);           
+        }
 
-            // külön állapottal jelezzük, ha egy adat újonnan hozzávett
-            if (_articleFlags.ContainsKey(articleToModify) && _articleFlags[articleToModify] == DataFlag.Create)
-            {
-                _articleFlags[articleToModify] = DataFlag.Create;
-            }
-            else
-            {
-                _articleFlags[articleToModify] = DataFlag.Update;
-            }
+        private void OnArticleChanged(ArticleListElement article)
+        {
+            if (ArticleChanged != null)
+                ArticleChanged(this, new ArticleListEventArgs { Article = article });
+        }
 
-            // jelezzük a változást
-            //OnArticleChanged(article.Id);
+        private void OnArticleCreated(ArticleListElement article)
+        {
+            if (ArticleCreated != null)
+                ArticleCreated(this, new ArticleListEventArgs { Article = article });
+        }
+
+        private void OnPictureCreated(PictureDTO picture)
+        {
+            if (PictureCreated != null)
+                PictureCreated(this, new PictureEventArgs { Picture = picture });
+        }
+
+        
+
+        private int getNextId()
+        {
+            return --_generatedId;
+        }
+
+        private bool IsFormInvalid(ArticleDTO article)
+        {
+            return String.IsNullOrEmpty(article.Title)
+                || String.IsNullOrEmpty(article.Content)
+                || String.IsNullOrEmpty(article.Content)
+                || (article.Lead == true && article.Pictures.Count == 0);
         }
     }
 }
