@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -65,6 +66,7 @@ namespace NewsPortal.WebAPI.Controllers
 
         // POST: api/Pictures
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public IActionResult PostPicture([FromBody] PictureDTO pictureDTO)
         {
             if (!ModelState.IsValid)
@@ -100,6 +102,7 @@ namespace NewsPortal.WebAPI.Controllers
 
         // DELETE: api/Pictures/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public IActionResult DeletePicture([FromRoute] int id)
         {
             if (!ModelState.IsValid)

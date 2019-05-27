@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,11 +11,14 @@ namespace NewsPortal.Persistence
     public static class DbInitializer
     {
         private static NewsPortalContext _context;
+        private static UserManager<User> _userManager;
+        private static RoleManager<IdentityRole<int>> _roleManager;
 
-
-        public static void Initialize(NewsPortalContext context, string imageDirectory)
+        public static void Initialize(NewsPortalContext context, UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager, string imageDirectory)
         {
             _context = context;
+            _userManager = userManager;
+            _roleManager = roleManager;
             _context.Database.EnsureCreated();
 
             if (_context.Articles.Any())
@@ -34,25 +38,26 @@ namespace NewsPortal.Persistence
                 new User
                 {
                     Name = "Anna",
-                    Username = "anna01",
-                    Password = "pwd"
+                    UserName = "anna01",                   
                 },
                 new User
                 {
                     Name = "Peti",
-                    Username = "peti02",
-                    Password = "pwd"
+                    UserName = "peti02",                   
                 },
                 new User
                 {
                     Name = "Gergő",
-                    Username = "gergo03",
-                    Password = "pwd"
+                    UserName = "gergo03",                   
                 }
             };
             foreach (User u in defaultUsers)
             {
-                _context.Users.Add(u);
+                var adminPassword = "Password00";
+                var adminRole = new IdentityRole<int>("admin");
+                var result1 = _userManager.CreateAsync(u, adminPassword).Result;
+                var result2 = _roleManager.CreateAsync(adminRole).Result;
+                var result3 = _userManager.AddToRoleAsync(u, adminRole.Name).Result;
             }
             _context.SaveChanges();
         }

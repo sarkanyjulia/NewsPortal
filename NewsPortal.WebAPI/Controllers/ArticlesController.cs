@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NewsPortal.Data;
 using NewsPortal.Persistence;
+using Microsoft.AspNetCore.Identity;
 
 namespace NewsPortal.WebAPI.Controllers
 {
@@ -79,6 +81,7 @@ namespace NewsPortal.WebAPI.Controllers
 
         // PUT: api/Articles/5
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         public IActionResult PutArticle([FromRoute] int id, [FromBody] ArticleDTO articleDTO)
         {
             if (!ModelState.IsValid)
@@ -114,6 +117,7 @@ namespace NewsPortal.WebAPI.Controllers
 
         // POST: api/Articles
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public IActionResult PostArticle([FromBody] ArticleDTO articleDTO)
         {
             if (!ModelState.IsValid)
@@ -158,6 +162,7 @@ namespace NewsPortal.WebAPI.Controllers
 
         // DELETE: api/Articles/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public IActionResult DeleteArticle([FromRoute] int id)
         {
             if (!ModelState.IsValid)

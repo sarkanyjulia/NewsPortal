@@ -35,8 +35,7 @@ namespace NewsPortal.Admin
         private void App_Startup(object sender, StartupEventArgs e)
         {
             _model = new NewsPortalModel(new NewsPortalServicePersistence("https://localhost:44348/")); // megadjuk a szolgáltatás címét
-            
-            /*
+         
             _loginViewModel = new LoginViewModel(_model);
             _loginViewModel.ExitApplication += new EventHandler(ViewModel_ExitApplication);
             _loginViewModel.LoginSuccess += new EventHandler(ViewModel_LoginSuccess);
@@ -45,7 +44,11 @@ namespace NewsPortal.Admin
             _loginView = new LoginWindow();
             _loginView.DataContext = _loginViewModel;
             _loginView.Show();
-            */
+       
+        }
+
+        private void ViewModel_LoginSuccess(object sender, EventArgs e)
+        {
             _mainViewModel = new MainViewModel(_model);
             _mainViewModel.ArticleEditingStarted += new EventHandler(MainViewModel_ArticleEditingStarted);
             _mainViewModel.ArticleEditingFinished += new EventHandler(MainViewModel_ArticleEditingFinished);
@@ -54,21 +57,6 @@ namespace NewsPortal.Admin
             _model.ArticleCreated += new EventHandler<ArticleListEventArgs>(_mainViewModel.ViewModel_ArticleCreated);
             _model.ArticleChanged += new EventHandler<ArticleListEventArgs>(_mainViewModel.ViewModel_ArticleChanged);
             _model.PictureCreated += new EventHandler<PictureEventArgs>(_mainViewModel.ViewModel_PictureCreated);
-
-            _mainView = new MainWindow();
-            _mainView.DataContext = _mainViewModel;
-            _mainView.Show();
-        }
-
-        private void ViewModel_LoginSuccess(object sender, EventArgs e)
-        {
-            _mainViewModel = new MainViewModel(_model);
-            
-            //_mainViewModel.MessageApplication += new EventHandler<MessageEventArgs>(ViewModel_MessageApplication);
-            _mainViewModel.ArticleEditingStarted += new EventHandler(MainViewModel_ArticleEditingStarted);
-            _mainViewModel.ArticleEditingFinished += new EventHandler(MainViewModel_ArticleEditingFinished);
-            //_mainViewModel.ImageEditingStarted += new EventHandler<BuildingEventArgs>(MainViewModel_ImageEditingStarted);*/
-            _mainViewModel.ExitApplication += new EventHandler(ViewModel_ExitApplication);
 
             _mainView = new MainWindow();
             _mainView.DataContext = _mainViewModel;
