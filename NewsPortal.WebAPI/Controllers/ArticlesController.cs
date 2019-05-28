@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using NewsPortal.Data;
 using NewsPortal.Persistence;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace NewsPortal.WebAPI.Controllers
 {
@@ -26,12 +27,15 @@ namespace NewsPortal.WebAPI.Controllers
 
         // GET: api/Articles
         [HttpGet]
+        [Authorize]
         public IActionResult GetArticles()
         {
+            
             //return _context.Articles.OrderByDescending(article => article.LastModified);
             try
             {
-                return Ok(_context.Articles.Include(a => a.Author).OrderByDescending(article => article.LastModified)
+                int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+                return Ok(_context.Articles.Where(a => a.UserId == userId).Include(a => a.Author).OrderByDescending(article => article.LastModified)
                     .ToList()
                     .Select(article => new ArticleListElement
                     {
@@ -50,21 +54,29 @@ namespace NewsPortal.WebAPI.Controllers
 
         // GET: api/Articles/5
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult GetArticle([FromRoute] int id)
         {
+            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
             var article = _context.Articles.Find(id);
-            var pictures = _context.Pictures.Where(p => p.ArticleId == id)
-                .Select(image => new PictureDTO { Id = image.Id, ArticleId = image.ArticleId, ImageSmall = image.ImageSmall, ImageLarge = null });
-
             if (article == null)
             {
                 return NotFound();
             }
+            if (article.UserId != userId)
+            {
+                return BadRequest();
+            }
+
+            var pictures = _context.Pictures.Where(p => p.ArticleId == id)
+                .Select(image => new PictureDTO { Id = image.Id, ArticleId = image.ArticleId, ImageSmall = image.ImageSmall, ImageLarge = null });
+           
             ArticleDTO articleDTO = new ArticleDTO
             {
                 Id = article.Id,
@@ -84,12 +96,12 @@ namespace NewsPortal.WebAPI.Controllers
         [Authorize(Roles = "admin")]
         public IActionResult PutArticle([FromRoute] int id, [FromBody] ArticleDTO articleDTO)
         {
+            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
-            if (id != articleDTO.Id)
+            if (id != articleDTO.Id || articleDTO.UserId != userId)
             {
                 return BadRequest();
             }
@@ -120,9 +132,14 @@ namespace NewsPortal.WebAPI.Controllers
         [Authorize(Roles = "admin")]
         public IActionResult PostArticle([FromBody] ArticleDTO articleDTO)
         {
+            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+            if (articleDTO.UserId != userId)
+            {
+                return BadRequest();
             }
 
             try
@@ -165,6 +182,8 @@ namespace NewsPortal.WebAPI.Controllers
         [Authorize(Roles = "admin")]
         public IActionResult DeleteArticle([FromRoute] int id)
         {
+            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -174,8 +193,14 @@ namespace NewsPortal.WebAPI.Controllers
             {
                 Article article = _context.Articles.FirstOrDefault(a => a.Id == id);
 
-                if (article == null) // ha nincs ilyen azonosító, akkor hibajelzést küldünk
+                if (article == null)
+                {
                     return NotFound();
+                }
+                if (article.UserId != userId)
+                {
+                    return BadRequest();
+                }
 
                 _context.Articles.Remove(article);
                 _context.SaveChanges(); 

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NewsPortal.Persistence;
+using System.Security.Claims;
 
 namespace NewsPortal.WebAPI.Controllers
 {
@@ -74,6 +75,7 @@ namespace NewsPortal.WebAPI.Controllers
                 }
             }
 
-        }
+        
+    }
     
 }

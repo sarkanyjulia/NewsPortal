@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -25,6 +26,7 @@ namespace NewsPortal.WebAPI.Controllers
 
         // GET: api/Pictures
         [HttpGet]
+        [Authorize]
         public IEnumerable<Picture> GetPictures()
         {
             return _context.Pictures;
@@ -32,8 +34,16 @@ namespace NewsPortal.WebAPI.Controllers
 
         // Egy cikkhez tartozó képek
         [HttpGet("a/{articleId}")]
+        [Authorize]
         public IActionResult GetImagesByArticle([FromRoute] int articleId)
         {
+            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            Article article = _context.Articles.Find(articleId);
+            if (userId != article.UserId)
+            {
+                return BadRequest();
+            }
+
             return Ok(_context.Pictures.Where(p => p.ArticleId == articleId)
                 .Select(image => new PictureDTO { Id = image.Id, ArticleId = image.ArticleId, ImageSmall = image.ImageSmall, ImageLarge = null }));                   
            
@@ -41,6 +51,7 @@ namespace NewsPortal.WebAPI.Controllers
 
         // GET: api/Pictures/5
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult GetPicture([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -52,6 +63,13 @@ namespace NewsPortal.WebAPI.Controllers
 
             if (picture == null)
                 return NotFound();
+
+            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            Article article = _context.Articles.Where(a => a.Id == picture.ArticleId).FirstOrDefault();
+            if (userId != article.UserId)
+            {
+                return BadRequest();
+            }
 
             return Ok(new PictureDTO
             {
@@ -74,8 +92,15 @@ namespace NewsPortal.WebAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (pictureDTO == null || !_context.Articles.Any(article => pictureDTO.ArticleId == article.Id))
+            if (pictureDTO == null || !_context.Articles.Any(a => pictureDTO.ArticleId == a.Id))
                 return NotFound();
+
+            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            Article article = _context.Articles.Where(a => a.Id == pictureDTO.ArticleId).FirstOrDefault();
+            if (userId != article.UserId)
+            {
+                return BadRequest();
+            }
 
             Picture picture = new Picture
             {
@@ -104,16 +129,22 @@ namespace NewsPortal.WebAPI.Controllers
         [HttpDelete("{id}")]
         [Authorize(Roles = "admin")]
         public IActionResult DeletePicture([FromRoute] int id)
-        {
+        {            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
             
-            Picture picture = _context.Pictures.FirstOrDefault(pic => pic.Id == id);
-
+            Picture picture = _context.Pictures.FirstOrDefault(pic => pic.Id == id);          
             if (picture == null)
                 return NotFound();
+
+            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            Article article = _context.Articles.Where(a => a.Id == picture.ArticleId).FirstOrDefault();
+            if (userId != article.UserId)
+            {
+                return BadRequest();
+            }
 
             try
             {
