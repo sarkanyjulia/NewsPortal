@@ -44,7 +44,7 @@ namespace NewsPortal.Admin.Model
         {          
             PictureDTO picture = new PictureDTO
             {
-                Id = getNextId(),
+                Id = GetNextId(),
                 ArticleId = articleId,
                 ImageSmall = imageSmall,
                 ImageLarge = imageLarge
@@ -169,7 +169,7 @@ namespace NewsPortal.Admin.Model
 
         
 
-        private int getNextId()
+        private int GetNextId()
         {
             return --_generatedId;
         }
@@ -177,7 +177,8 @@ namespace NewsPortal.Admin.Model
         private bool IsFormInvalid(ArticleDTO article)
         {
             return String.IsNullOrEmpty(article.Title)
-                || String.IsNullOrEmpty(article.Content)
+                || String.IsNullOrEmpty(article.Summary)
+                || article.Summary.Length > 1000
                 || String.IsNullOrEmpty(article.Content)
                 || (article.Lead == true && article.Pictures.Count == 0);
         }

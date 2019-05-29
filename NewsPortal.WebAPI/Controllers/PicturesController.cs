@@ -22,65 +22,8 @@ namespace NewsPortal.WebAPI.Controllers
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
             _context = context;
-        }
-
-        // GET: api/Pictures
-        [HttpGet]
-        [Authorize]
-        public IEnumerable<Picture> GetPictures()
-        {
-            return _context.Pictures;
-        }
-
-        // Egy cikkhez tartozó képek
-        [HttpGet("a/{articleId}")]
-        [Authorize]
-        public IActionResult GetImagesByArticle([FromRoute] int articleId)
-        {
-            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
-            Article article = _context.Articles.Find(articleId);
-            if (userId != article.UserId)
-            {
-                return BadRequest();
-            }
-
-            return Ok(_context.Pictures.Where(p => p.ArticleId == articleId)
-                .Select(image => new PictureDTO { Id = image.Id, ArticleId = image.ArticleId, ImageSmall = image.ImageSmall, ImageLarge = null }));                   
-           
-        }
-
-        // GET: api/Pictures/5
-        [HttpGet("{id}")]
-        [Authorize]
-        public IActionResult GetPicture([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            Picture picture = _context.Pictures.Find(id);
-
-            if (picture == null)
-                return NotFound();
-
-            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
-            Article article = _context.Articles.Where(a => a.Id == picture.ArticleId).FirstOrDefault();
-            if (userId != article.UserId)
-            {
-                return BadRequest();
-            }
-
-            return Ok(new PictureDTO
-            {
-                Id = picture.Id,
-                ArticleId = picture.ArticleId,
-                ImageSmall = picture.ImageSmall,
-                ImageLarge = picture.ImageLarge
-            });
-        }
-
-       
+        }     
+   
 
         // POST: api/Pictures
         [HttpPost]
@@ -95,7 +38,7 @@ namespace NewsPortal.WebAPI.Controllers
             if (pictureDTO == null || !_context.Articles.Any(a => pictureDTO.ArticleId == a.Id))
                 return NotFound();
 
-            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            int userId = GetUserId();
             Article article = _context.Articles.Where(a => a.Id == pictureDTO.ArticleId).FirstOrDefault();
             if (userId != article.UserId)
             {
@@ -139,7 +82,7 @@ namespace NewsPortal.WebAPI.Controllers
             if (picture == null)
                 return NotFound();
 
-            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            int userId = GetUserId();
             Article article = _context.Articles.Where(a => a.Id == picture.ArticleId).FirstOrDefault();
             if (userId != article.UserId)
             {
@@ -159,9 +102,63 @@ namespace NewsPortal.WebAPI.Controllers
             }
         }
 
+                /*
+         // Egy cikkhez tartozó képek
+         [HttpGet("a/{articleId}")]
+         [Authorize]
+         public IActionResult GetImagesByArticle([FromRoute] int articleId)
+         {
+             int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+             Article article = _context.Articles.Find(articleId);
+             if (userId != article.UserId)
+             {
+                 return BadRequest();
+             }
+
+             return Ok(_context.Pictures.Where(p => p.ArticleId == articleId)
+                 .Select(image => new PictureDTO { Id = image.Id, ArticleId = image.ArticleId, ImageSmall = image.ImageSmall, ImageLarge = null }));                   
+
+         }
+
+         // GET: api/Pictures/5
+         [HttpGet("{id}")]
+         [Authorize]
+         public IActionResult GetPicture([FromRoute] int id)
+         {
+             if (!ModelState.IsValid)
+             {
+                 return BadRequest(ModelState);
+             }
+
+             Picture picture = _context.Pictures.Find(id);
+
+             if (picture == null)
+                 return NotFound();
+
+             int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+             Article article = _context.Articles.Where(a => a.Id == picture.ArticleId).FirstOrDefault();
+             if (userId != article.UserId)
+             {
+                 return BadRequest();
+             }
+
+             return Ok(new PictureDTO
+             {
+                 Id = picture.Id,
+                 ArticleId = picture.ArticleId,
+                 ImageSmall = picture.ImageSmall,
+                 ImageLarge = picture.ImageLarge
+             });
+         }*/
+
         private bool PictureExists(int id)
         {
             return _context.Pictures.Any(e => e.Id == id);
         }
+        protected virtual int GetUserId()
+        {
+            return Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+        }
+      
     }
 }

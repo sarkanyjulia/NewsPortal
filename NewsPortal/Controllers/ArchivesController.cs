@@ -35,13 +35,17 @@ namespace NewsPortal.WebSite.Controllers
         [HttpGet]
         public IActionResult Result(DateTime? dateFrom, DateTime? dateTo, String title, String content, int? pageNumber)
         {
+
             int pageSize = 20;
-            SearchPageViewModel viewModel = new SearchPageViewModel();   
-            viewModel.DateFrom = dateFrom;
-            viewModel.DateTo = dateTo;
-            viewModel.Title = title;
-            viewModel.Content = content;           
-            viewModel.Result = PaginatedList<Article>.Create(_service.FindArticles(dateFrom, dateTo, title, content), pageNumber ?? 1, pageSize);
+            SearchPageViewModel viewModel = new SearchPageViewModel();
+            if (ModelState.IsValid)
+            {
+                viewModel.DateFrom = dateFrom;
+                viewModel.DateTo = dateTo;
+                viewModel.Title = title;
+                viewModel.Content = content;
+                viewModel.Result = PaginatedList<Article>.Create(_service.FindArticles(dateFrom, dateTo, title, content), pageNumber ?? 1, pageSize);
+            }
             return View("Search", viewModel);
         }      
     }

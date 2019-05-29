@@ -11,9 +11,8 @@ namespace NewsPortal.Admin.ViewModel
 {
     public class ArticleViewModel : ViewModelBase
     {
-        private int _id;
-        private String _title;
-        private DateTime _lastModified;
+        
+        private String _title;       
         private String _summary;
         private String _content;
         private Boolean _lead;

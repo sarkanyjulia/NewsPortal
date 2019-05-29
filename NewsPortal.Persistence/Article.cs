@@ -20,6 +20,7 @@ namespace NewsPortal.Persistence
 
         [Required]
         [DataType(DataType.MultilineText)]
+        [MaxLength(1000)]
         public String Summary { get; set; }
 
         [Required]

@@ -134,7 +134,7 @@ namespace NewsPortal.Admin.ViewModel
                 }
                 catch (InvalidFormException ex)
                 {
-                    MessageBox.Show("Az űrlap helytelenül van kitöltve, így nem mlehet menteni.\nAz összes szöveges mező kitöltése kötelező.\nVezető cikkhez kötelező legalább egy képet feltölteni.", "Hiba");
+                    MessageBox.Show("Az űrlap helytelenül van kitöltve, így nem lehet menteni.\nHelyes:\n- az összes szöveges mező ki van töltve\n- az összefoglaló nem hosszabb 1000 karakternél\n- vezető cikkhez kötelező legalább egy képet feltölteni", "Hiba");
                 }
                 catch
                 {

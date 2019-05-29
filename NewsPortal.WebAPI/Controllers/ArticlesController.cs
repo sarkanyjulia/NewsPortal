@@ -16,13 +16,13 @@ namespace NewsPortal.WebAPI.Controllers
     [Route("api/[controller]")]
     public class ArticlesController : ControllerBase
     {
-        private readonly NewsPortalContext _context;
+        private readonly NewsPortalContext _context;      
 
         public ArticlesController(NewsPortalContext context)
         {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
-            _context = context;
+            _context = context;           
         }
 
         // GET: api/Articles
@@ -30,11 +30,10 @@ namespace NewsPortal.WebAPI.Controllers
         [Authorize]
         public IActionResult GetArticles()
         {
-            
-            //return _context.Articles.OrderByDescending(article => article.LastModified);
+
             try
-            {
-                int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            {               
+                int userId = GetUserId();
                 return Ok(_context.Articles.Where(a => a.UserId == userId).Include(a => a.Author).OrderByDescending(article => article.LastModified)
                     .ToList()
                     .Select(article => new ArticleListElement
@@ -57,8 +56,11 @@ namespace NewsPortal.WebAPI.Controllers
         [Authorize]
         public IActionResult GetArticle([FromRoute] int id)
         {
-            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
-            
+            //int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            //User user = await _userManager.GetUserAsync(User);
+            //int userId = user.Id;
+
+            int userId = GetUserId();
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -71,12 +73,12 @@ namespace NewsPortal.WebAPI.Controllers
             }
             if (article.UserId != userId)
             {
-                return BadRequest();
+                return Forbid();
             }
 
             var pictures = _context.Pictures.Where(p => p.ArticleId == id)
                 .Select(image => new PictureDTO { Id = image.Id, ArticleId = image.ArticleId, ImageSmall = image.ImageSmall, ImageLarge = null });
-           
+
             ArticleDTO articleDTO = new ArticleDTO
             {
                 Id = article.Id,
@@ -86,7 +88,7 @@ namespace NewsPortal.WebAPI.Controllers
                 Content = article.Content,
                 Lead = article.Lead,
                 UserId = article.UserId,
-                Pictures = pictures.ToList()             
+                Pictures = pictures.ToList()
             };
             return Ok(articleDTO);
         }
@@ -95,17 +97,22 @@ namespace NewsPortal.WebAPI.Controllers
         [HttpPut("{id}")]
         [Authorize(Roles = "admin")]
         public IActionResult PutArticle([FromRoute] int id, [FromBody] ArticleDTO articleDTO)
-        {
-            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+        {          
+            int userId = GetUserId();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            if (id != articleDTO.Id || articleDTO.UserId != userId)
+            if (id != articleDTO.Id)
             {
                 return BadRequest();
             }
-            
+            if (articleDTO.UserId != userId)
+            {
+                return Forbid();
+            }
+
             try
             {
                 Article article = _context.Articles.FirstOrDefault(a => a.Id == articleDTO.Id);
@@ -117,29 +124,30 @@ namespace NewsPortal.WebAPI.Controllers
                 article.Summary = articleDTO.Summary;
                 article.Content = articleDTO.Content;
                 article.Lead = articleDTO.Lead;
-                
+
                 _context.SaveChanges();
                 return Ok();
             }
-            catch 
+            catch
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
-            }        
+            }
         }
 
         // POST: api/Articles
         [HttpPost]
         [Authorize(Roles = "admin")]
         public IActionResult PostArticle([FromBody] ArticleDTO articleDTO)
-        {
-            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
+        {           
+            int userId = GetUserId();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
             if (articleDTO.UserId != userId)
             {
-                return BadRequest();
+                return Forbid();
             }
 
             try
@@ -153,7 +161,7 @@ namespace NewsPortal.WebAPI.Controllers
                     Lead = articleDTO.Lead,
                     UserId = articleDTO.UserId
                 });
-                _context.SaveChanges(); 
+                _context.SaveChanges();
                 articleDTO.Id = addedArticle.Entity.Id;
 
                 foreach (PictureDTO pictureDTO in articleDTO.Pictures)
@@ -182,8 +190,9 @@ namespace NewsPortal.WebAPI.Controllers
         [Authorize(Roles = "admin")]
         public IActionResult DeleteArticle([FromRoute] int id)
         {
-            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
-            
+           
+            int userId = GetUserId();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -199,11 +208,11 @@ namespace NewsPortal.WebAPI.Controllers
                 }
                 if (article.UserId != userId)
                 {
-                    return BadRequest();
+                    return Forbid();
                 }
 
                 _context.Articles.Remove(article);
-                _context.SaveChanges(); 
+                _context.SaveChanges();
                 return Ok();
             }
             catch
@@ -216,6 +225,12 @@ namespace NewsPortal.WebAPI.Controllers
         private bool ArticleExists(int id)
         {
             return _context.Articles.Any(e => e.Id == id);
+        }
+
+        protected virtual int GetUserId()
+        {
+            //return 1;
+            return Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));          
         }
     }
 }
