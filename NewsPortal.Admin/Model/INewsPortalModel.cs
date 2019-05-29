@@ -27,8 +27,6 @@ namespace NewsPortal.Admin.Model
 
         void DeleteArticle(ArticleListElement article);
 
-        void DeletePicture(PictureDTO picture);
-
         Task LoadAsync();
 
         Task CreateArticleAsync(ArticleDTO articleToSave);
@@ -36,6 +34,7 @@ namespace NewsPortal.Admin.Model
         Task<Boolean> LoginAsync(String userName, String userPassword);
 
         Task<Boolean> LogoutAsync();
+        void Model_LoginSuccessAsync(object sender, EventArgs e);
     }
         
 }

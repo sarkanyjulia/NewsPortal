@@ -75,11 +75,32 @@ namespace NewsPortal.Admin.Persistence
             }
         }
 
+        public async Task<UserDTO> GetUser()
+        {
+            try
+            {
+                HttpResponseMessage response = await _client.GetAsync("api/users/user");
+                if (response.IsSuccessStatusCode)
+                {
+                    UserDTO user = await response.Content.ReadAsAsync<UserDTO>();
+                    return user;
+                }
+                else
+                {
+                    throw new PersistenceUnavailableException("Service returned response: " + response.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new PersistenceUnavailableException(ex);
+            }
+        }
+
         public async Task<bool> LoginAsync(string userName, string userPassword)
         {
             try
             {
-                HttpResponseMessage response = await _client.GetAsync("api/account/login/" + userName + "/" + userPassword);
+                HttpResponseMessage response = await _client.GetAsync("api/account/login/" + userName + "/" + userPassword);              
                 return response.IsSuccessStatusCode; // a művelet eredménye megadja a bejelentkezés sikeressségét
             }
             catch (Exception ex)
@@ -125,25 +146,11 @@ namespace NewsPortal.Admin.Persistence
         public async Task<IEnumerable<ArticleListElement>> ReadArticlesAsync()
         {
             try
-            {
-                // a kéréseket a kliensen keresztül végezzük
+            {             
                 HttpResponseMessage response = await _client.GetAsync("api/articles/");
-                if (response.IsSuccessStatusCode) // amennyiben sikeres a művelet
-                {
-                    //IEnumerable<ArticleListElement> articles = JsonConvert.DeserializeObject<IEnumerable<ArticleListElement>>(await response.Content.ReadAsStringAsync());
-                    IEnumerable<ArticleListElement> articles = await response.Content.ReadAsAsync<IEnumerable<ArticleListElement>>();
-                    // a tartalmat JSON formátumból objektumokká alakítjuk
-
-                    // képek lekérdezése:
-                    /*foreach (ArticleListElement article in articles)
-                    {
-                        response = await _client.GetAsync("api/pictures/a/" + article.Id);
-                        if (response.IsSuccessStatusCode)
-                        {
-                            article.Pictures = (await response.Content.ReadAsAsync<IEnumerable<PictureDTO>>()).ToList();
-                        }
-                    }*/
-
+                if (response.IsSuccessStatusCode) 
+                {                   
+                    IEnumerable<ArticleListElement> articles = await response.Content.ReadAsAsync<IEnumerable<ArticleListElement>>();                 
                     return articles;
                 }
                 else

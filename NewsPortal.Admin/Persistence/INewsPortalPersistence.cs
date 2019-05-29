@@ -18,6 +18,7 @@ namespace NewsPortal.Admin.Persistence
         Task<Boolean> DeletePictureAsync(int pictureId);       
         Task<Boolean> LoginAsync(String userName, String userPassword);
         Task<Boolean> LogoutAsync();
+        Task<UserDTO> GetUser();
         
     }
 }

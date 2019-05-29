@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NewsPortal.Persistence;
 using System.Security.Claims;
+using NewsPortal.Data;
 
 namespace NewsPortal.WebAPI.Controllers
 {
@@ -21,13 +22,14 @@ namespace NewsPortal.WebAPI.Controllers
             /// Authentikációs szolgáltatás.
             /// </summary>
             private readonly SignInManager<User> _signInManager;
+            private readonly UserManager<User> _userManager;
 
-            /// <summary>
-            /// Vezérlő példányosítása.
-            /// </summary>
-            public AccountController(SignInManager<User> signInManager)
+        /// <summary>
+        /// Vezérlő példányosítása.
+        /// </summary>
+        public AccountController(SignInManager<User> signInManager)
             {
-                _signInManager = signInManager;
+                _signInManager = signInManager;              
             }
 
             /// <summary>
@@ -45,8 +47,8 @@ namespace NewsPortal.WebAPI.Controllers
                     if (!result.Succeeded) // ha nem sikerült, akkor nincs bejelentkeztetés
                         return Forbid();
 
-                    // ha sikeres volt az ellenőrzés
-                    return Ok();
+                // ha sikeres volt az ellenőrzés              
+                return Ok();
                 }
                 catch
                 {

@@ -32,8 +32,17 @@ namespace NewsPortal.WebSite.Models
 
         public IEnumerable<Article> GetFreshArticles()
         {
+            Article leadingArticle = _context.Articles
+                .OrderByDescending(a => a.LastModified)
+                .FirstOrDefault(article => article.Lead == true);
+            if (leadingArticle==null)
+            {
+                return _context.Articles               
+                .OrderByDescending(article => article.LastModified)
+                .Take(10);
+            }
             return _context.Articles
-                .Where(article => article.Lead == false)
+                .Where(article => article.Id != leadingArticle.Id)
                 .OrderByDescending(article => article.LastModified)
                 .Take(10);
         }
@@ -42,6 +51,7 @@ namespace NewsPortal.WebSite.Models
         {
             return _context.Articles
                 .Include(article => article.Pictures)
+                .OrderByDescending(a => a.LastModified)
                 .FirstOrDefault(article => article.Lead==true);
         }
 
@@ -90,6 +100,8 @@ namespace NewsPortal.WebSite.Models
 
         public IQueryable<Article> FindArticles(DateTime? dateFrom, DateTime? dateTo, String title, String content)
         {
+
+
             IQueryable<Article> result = _context.Articles;
             if (dateFrom != null)
             {

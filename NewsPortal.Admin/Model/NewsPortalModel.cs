@@ -9,13 +9,13 @@ using NewsPortal.Admin.Persistence;
 namespace NewsPortal.Admin.Model
 {
     public class NewsPortalModel : INewsPortalModel
-    {
-        private int _uid = 1;
-        private String _uname = "Anna";
+    {       
         private int _generatedId = 0;
 
         private INewsPortalPersistence _persistence;
         private List<ArticleListElement> _articleList;
+
+        public UserDTO RecentUser { get; private set; }
 
         public NewsPortalModel(INewsPortalPersistence persistence)
         {
@@ -57,11 +57,7 @@ namespace NewsPortal.Admin.Model
             _persistence.DeleteArticleAsync(article.Id);
             _articleList.Remove(article);
         }
-
-        public void DeletePicture(PictureDTO picture)
-        {
-           
-        }
+       
 
         public async Task LoadAsync()
         {          
@@ -75,7 +71,11 @@ namespace NewsPortal.Admin.Model
 
         public async Task<bool> LoginAsync(string userName, string userPassword)
         {
-            IsUserLoggedIn = await _persistence.LoginAsync(userName, userPassword);
+            IsUserLoggedIn = await _persistence.LoginAsync(userName, userPassword); 
+            if (IsUserLoggedIn)
+            {
+                RecentUser = await _persistence.GetUser();
+            }
             return IsUserLoggedIn;
         }
 
@@ -85,7 +85,7 @@ namespace NewsPortal.Admin.Model
                 return true;
 
             IsUserLoggedIn = !(await _persistence.LogoutAsync());
-
+            RecentUser = null;
             return IsUserLoggedIn;
         }
 
@@ -95,14 +95,14 @@ namespace NewsPortal.Admin.Model
             {
                 throw new InvalidFormException();
             }
-            article.UserId = _uid;
+            article.UserId = RecentUser.Id;
             await _persistence.CreateArticleAsync(article);
             ArticleListElement newArticleElementList = new ArticleListElement
             {
                 Id = article.Id,
                 Title = article.Title,
                 LastModified = article.LastModified,
-                AuthorName = _uname
+                AuthorName = RecentUser.Name
             };
             _articleList.Add(newArticleElementList);
             OnArticleCreated(newArticleElementList);
@@ -180,6 +180,12 @@ namespace NewsPortal.Admin.Model
                 || String.IsNullOrEmpty(article.Content)
                 || String.IsNullOrEmpty(article.Content)
                 || (article.Lead == true && article.Pictures.Count == 0);
+        }
+
+        public async void Model_LoginSuccessAsync(object sender, EventArgs e)
+        {
+            UserDTO user = await _persistence.GetUser();
+            RecentUser = user;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NewsPortal.Data;
@@ -16,20 +17,21 @@ namespace NewsPortal.WebAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly NewsPortalContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public UsersController(NewsPortalContext context)
+        public UsersController(NewsPortalContext context, UserManager<User> userManager)
         {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
             _context = context;
+            _userManager = userManager;
         }
 
         [HttpGet("user")]
         [Authorize]
-        public IActionResult GetUser()
-        {
-            int userId = Int32.Parse(this.User.FindFirstValue(ClaimTypes.NameIdentifier));
-            User user = _context.Users.Find(userId);
+        public async Task<IActionResult> GetUser()
+        {          
+            User user = await _userManager.GetUserAsync(User);
             return Ok(new UserDTO
             {
                 Id = user.Id,

@@ -38,7 +38,7 @@ namespace NewsPortal.Admin
          
             _loginViewModel = new LoginViewModel(_model);
             _loginViewModel.ExitApplication += new EventHandler(ViewModel_ExitApplication);
-            _loginViewModel.LoginSuccess += new EventHandler(ViewModel_LoginSuccess);
+            _loginViewModel.LoginSuccess += new EventHandler(ViewModel_LoginSuccess);          
             _loginViewModel.LoginFailed += new EventHandler(ViewModel_LoginFailed);
 
             _loginView = new LoginWindow();

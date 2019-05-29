@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,12 +37,35 @@ namespace NewsPortal.WebSite
                     break;
             }
 
+            services.AddIdentity<User, IdentityRole<int>>()
+    .AddEntityFrameworkStores<NewsPortalContext>()
+    .AddDefaultTokenProviders();
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                // Jelszó komplexitására vonatkozó konfiguráció
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = false;
+
+
+                // Hibás bejelentkezés esetén az (ideiglenes) kizárásra vonatkozó konfiguráció
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
+                options.Lockout.MaxFailedAccessAttempts = 10;
+                options.Lockout.AllowedForNewUsers = true;
+
+                // Felhasználókezelésre vonatkozó konfiguráció
+                //options.User.RequireUniqueEmail = true;
+            });
+
             services.AddTransient<INewsPortalService, NewsPortalService>();
             services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -57,8 +81,12 @@ namespace NewsPortal.WebSite
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            // Adatbázis inicializálása
-            DbInitializer.Initialize(app.ApplicationServices.GetRequiredService<NewsPortalContext>(), Configuration.GetValue<string>("ImageStore"));
+            
+
+            var dbContext = serviceProvider.GetRequiredService<NewsPortalContext>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+            DbInitializer.Initialize(app.ApplicationServices.GetRequiredService<NewsPortalContext>(), userManager, roleManager, Configuration.GetValue<string>("ImageStore"));
         }
     }
 }

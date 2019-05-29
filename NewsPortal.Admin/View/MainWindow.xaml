@@ -22,7 +22,7 @@
             <MenuItem Header="Kijelentkezés" Command="{Binding ExitCommand}" />
         </Menu>
 
-        <DataGrid x:Name="articlegGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" ItemsSource="{Binding Articles}" SelectedItem="{Binding SelectedArticle}" xmlns:sys="clr-namespace:System;assembly=mscorlib" SelectionMode="Single">
+        <DataGrid x:Name="articlegGrid" Grid.Row="1"  AutoGenerateColumns="False" IsReadOnly="True" ItemsSource="{Binding Articles}" SelectedItem="{Binding SelectedArticle}" xmlns:sys="clr-namespace:System;assembly=mscorlib" SelectionMode="Single">
            
             <DataGrid.Resources>
                 <sys:String x:Key="edit">Szerkeszt</sys:String>
